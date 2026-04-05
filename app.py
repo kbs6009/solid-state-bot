@@ -1,7 +1,7 @@
 import streamlit as st
 import google.generativeai as genai
 
-# 1. 페이지 설정 및 디자인
+# 1. 페이지 설정 및 디자인 (LG 에너지솔루션 스타일 CSS)
 st.set_page_config(page_title="LG EnSol Style - 전고체전지 분석", layout="centered")
 
 st.markdown("""
@@ -28,7 +28,7 @@ with st.sidebar:
 
 # 3. 메인 화면 로직
 if password == "grsi":
-    st.markdown("<div class='title'>전고체전지 기사 분석 봇</div>", unsafe_allow_html=True)
+    st.markdown("<div class='title'>전고체전지 산업 분석 서비스</div>", unsafe_allow_html=True)
     st.markdown("<div class='subtitle'>기사 URL을 입력하시면 전문 애널리스트의 분석 리포트를 제공합니다.</div>", unsafe_allow_html=True)
     st.markdown("---")
 
@@ -47,7 +47,7 @@ if password == "grsi":
     # 시스템 프롬프트 설정
     SYSTEM_PROMPT = "당신은 2차전지 및 전고체전지 산업 수석 애널리스트입니다. 반드시 한국 대기업식 개조식 요약문(~임, ~함)으로 작성하세요. 1. 핵심 요약(5문장), 2. 주요 키워드(기업/기술), 3. 파급력 분석(큼/중간/작음), 4. 애널리스트 인사이트(시장 판도 변화) 순서로 분석하세요."
 
-    # 입력 폼
+   # 입력 폼
     st.markdown("<div>기사 URL <span class='required'>*</span></div>", unsafe_allow_html=True)
     user_input = st.text_input("URL을 입력해 주세요.", label_visibility="collapsed", placeholder="https://news.naver.com/...")
 
@@ -57,26 +57,21 @@ if password == "grsi":
         else:
             with st.spinner("데이터를 정밀 분석 중입니다. 잠시만 기다려 주십시오..."):
                 try:
-                    # 모델 이름을 정확하게 지정 (gemini-1.5-flash)
                     model = genai.GenerativeModel(
-                        model_name="gemini-2.5-flash",
+                        model_name="gemini-1.5-flash",
                         system_instruction=SYSTEM_PROMPT
                     )
-                    
-                    # 답변 생성
                     response = model.generate_content(user_input)
                     
                     if response.text:
                         st.markdown("<div class='result-box'>", unsafe_allow_html=True)
-                        st.markdown("### 📊 전고체전지 기사 분석 리포트")
+                        st.markdown("### 📊 전고체전지 산업 분석 리포트")
                         st.markdown(response.text)
                         st.markdown("</div>", unsafe_allow_html=True)
                     else:
                         st.warning("분석 결과가 비어 있습니다. URL을 다시 확인해 주세요.")
-                        
                 except Exception as e:
                     st.error(f"분석 중 오류가 발생했습니다: {e}")
-                    st.info("라이브러리 버전이나 모델 이름 설정을 다시 확인 중입니다.")
 
 else:
     st.markdown("<div class='title' style='margin-top:100px;'>Service Access</div>", unsafe_allow_html=True)
@@ -85,4 +80,4 @@ else:
         st.sidebar.error("❌ 암호가 일치하지 않습니다.")
 
 st.markdown("---")
-st.markdown("<div style='text-align: center; color: #999; font-size: 12px;'>© 2024 Solid-State Battery Analy
+st.markdown("<div style='text-align: center; color: #999; font-size: 12px;'>© 2024 Solid-State Battery Analysis Service. All rights reserved.</div>", unsafe_allow_html=True)
