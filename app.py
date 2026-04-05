@@ -92,7 +92,7 @@ SYSTEM_PROMPT = """당신은 전고체전지 산업 수석 애널리스트임.
 # 7. 모델 생성 (★에러를 해결한 핵심 도구 설정 방식)
 # tools=[{"google_search_retrieval": {}}] 형식이 가장 안정적입니다.
 model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash",
+    model_name="gemini-2.5-flash",
     tools=[{"google_search_retrieval": {}}], 
     system_instruction=SYSTEM_PROMPT
 )
