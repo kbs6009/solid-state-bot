@@ -70,13 +70,17 @@ st.markdown("""
         border: 1px solid #ddd;
         padding: 25px;
         margin-top: 30px;
+        border-radius: 5px;
+        line-height: 1.6;
     }
     </style>
     """, unsafe_allow_html=True)
 
 # 2. 사이드바 - 암호 입력창
 with st.sidebar:
-    st.markdown("<div style='padding: 20px 0;'><img src='https://www.lgensol.com/assets/img/common/logo.png' width='150'></div>", unsafe_allow_html=True)
+    # LG 에너지솔루션 로고 (공식 웹사이트 이미지)
+    st.markdown("<div style='padding: 20px 0; text-align:center;'><img src='https://www.lgensol.com/assets/img/common/logo.png' width='150'></div>", unsafe_allow_html=True)
+    st.markdown("---")
     st.header("🔐 접속 인증")
     password = st.text_input("암호를 입력하세요", type="password")
 
@@ -87,11 +91,15 @@ if password == "grsi":
     st.markdown("<div class='subtitle'>기사 URL을 입력하시면 전문 애널리스트의 분석 리포트를 제공합니다.</div>", unsafe_allow_html=True)
     st.markdown("---")
 
-    # API 설정
-    MY_API_KEY = "YOUR_GOOGLE_API_KEY_HERE" # 본인의 API 키 입력
-    genai.configure(api_key=MY_API_KEY)
+    # [보안 적용] 스트림릿 Secrets에서 API 키를 안전하게 가져옵니다.
+    try:
+        MY_API_KEY = st.secrets["GEMINI_API_KEY"]
+        genai.configure(api_key=MY_API_KEY)
+    except Exception:
+        st.error("API Key 설정이 완료되지 않았습니다. Streamlit Cloud의 Secrets 설정을 확인해주세요.")
+        st.stop()
 
-    # 시스템 프롬프트
+    # 시스템 프롬프트 (수석 애널리스트 페르소나)
     SYSTEM_PROMPT = """
 당신은 2차전지 및 전고체전지(All-Solid-State Battery) 산업을 심도 있게 분석하는 수석 애널리스트입니다.
 반드시 한국 대기업식 '개조식 요약문'으로 작성할 것. (~임, ~함, ~로 판단됨 등)
@@ -111,7 +119,7 @@ if password == "grsi":
         if not user_input:
             st.error("분석할 URL을 입력해 주세요.")
         else:
-            with st.spinner("데이터를 분석 중입니다. 잠시만 기다려 주십시오..."):
+            with st.spinner("데이터를 정밀 분석 중입니다. 잠시만 기다려 주십시오..."):
                 try:
                     model = genai.GenerativeModel(
                         model_name="gemini-1.5-flash",
@@ -123,17 +131,3 @@ if password == "grsi":
                     st.markdown("### 📊 전고체전지 산업 분석 리포트")
                     st.markdown(response.text)
                     st.markdown("</div>", unsafe_allow_html=True)
-                    
-                except Exception as e:
-                    st.error(f"분석 중 오류가 발생했습니다: {e}")
-
-else:
-    # 암호 미입력 시 초기 화면
-    st.markdown("<div class='title' style='margin-top:100px;'>Service Access</div>", unsafe_allow_html=True)
-    st.markdown("<div class='subtitle'>본 서비스는 승인된 사용자만 이용 가능합니다.<br>사이드바에서 암호를 입력해 주십시오.</div>", unsafe_allow_html=True)
-    if password and password != "grsi":
-        st.sidebar.error("❌ 암호가 일치하지 않습니다.")
-
-# 하단 푸터 스타일
-st.markdown("---")
-st.markdown("<div style='text-align: center; color: #999; font-size: 12px;'>© 2024 Solid-State Battery Analysis Service. All rights reserved.</div>", unsafe_allow_html=True)
