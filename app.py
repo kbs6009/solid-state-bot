@@ -56,7 +56,7 @@ SYSTEM_PROMPT = """당신은 전고체전지 산업 수석 애널리스트임.
 
 # 7. 모델 생성 (안정 버전)
 model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash-latest",
+    model_name="gemini-2.5-flash-latest",
     system_instruction=SYSTEM_PROMPT
 )
 
