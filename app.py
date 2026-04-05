@@ -76,15 +76,15 @@ if not st.session_state.authenticated:
 else:
     # 사이드바 설정
     with st.sidebar:
-        st.markdown("### **책임 연구원 챗봇**")
-        st.write("전고체전지 기술 분석을 수행합니다.")
+        st.markdown("### **전고체전지 기사 분석 봇**")
+        st.write("전고체전지 기술 관련 기사를 분석합니다.")
         st.markdown("---")
         if st.button("대화 기록 초기화"):
             st.session_state.messages = []
             st.rerun()
 
     # 메인 챗봇 화면 상단
-    st.markdown("<div style='text-align: center; padding-bottom: 20px;'><span style='color:#37b5a5; font-weight:700;'>LG EnSol Style</span> 전고체전지 기술 분석 서비스</div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align: center; padding-bottom: 20px;'><span style='color:#37b5a5; font-weight:700;'>LG EnSol Style</span> 전고체전지 기술 관련 기사 분석 봇</div>", unsafe_allow_html=True)
 
     # API 클라이언트 설정
     try:
@@ -154,7 +154,7 @@ URL이 제공될 경우: 임의로 내용을 추측하지 말고, 반드시 '웹
             st.markdown(message["content"])
 
     # 사용자 입력 처리
-    if prompt := st.chat_input("기사 URL을 입력하거나 질문을 남겨주세요."):
+    if prompt := st.chat_input("기사 URL을 입력해 주세요."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
