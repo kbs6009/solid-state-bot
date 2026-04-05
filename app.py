@@ -1,171 +1,123 @@
 import streamlit as st
 import google.generativeai as genai
-import requests
-from bs4 import BeautifulSoup
 
-# -----------------------------
-# 1. 페이지 설정
-# -----------------------------
-st.set_page_config(page_title="전고체전지 분석 챗봇", layout="centered")
+# 1. 페이지 설정 및 디자인
+st.set_page_config(page_title="LG EnSol Style - 전고체전지 분석 챗봇", layout="centered")
 
-# -----------------------------
-# 2. 스타일
-# -----------------------------
 st.markdown("""
-<style>
-body { font-family: 'Noto Sans KR', sans-serif; }
-.stButton>button { 
-    width: 100%; background-color: #37b5a5; color: #fff;
-}
-</style>
+    <style>
+    .main { background-color: #ffffff; }
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&display=swap');
+    html, body, [class*="css"] { font-family: 'Noto Sans KR', sans-serif; color: #333; }
+    
+    .title { font-size: 28px; font-weight: 700; color: #000; text-align: center; margin-bottom: 10px; }
+    .subtitle { font-size: 15px; color: #666; text-align: center; margin-bottom: 30px; }
+    
+    .stButton>button { 
+        width: 100%; background-color: #37b5a5; color: #fff; border-radius: 5px; 
+        padding: 12px; font-size: 16px; font-weight: 700; border: none;
+    }
+    .stButton>button:hover { background-color: #2d9387; }
+    
+    .stChatMessage { border-radius: 15px; margin-bottom: 10px; }
+    </style>
 """, unsafe_allow_html=True)
 
-# -----------------------------
-# 3. 세션 상태
-# -----------------------------
+# 2. 세션 상태 초기화
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# -----------------------------
-# 4. 인증
-# -----------------------------
+# 3. 인증 화면
 if not st.session_state.authenticated:
-    st.title("🔒 Solid-State Battery Analyst")
+    st.markdown("<div style='padding-top: 60px;'></div>", unsafe_allow_html=True)
+    
+    with st.container():
+        st.markdown("<div class='auth-box'>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-bottom:30px;'><img src='https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/LG_Energy_Solution_logo.svg/1024px-LG_Energy_Solution_logo.svg.png' width='250'></div>", unsafe_allow_html=True)
+        st.markdown("<div class='title'>Solid-State Battery Analyst</div>", unsafe_allow_html=True)
+        st.markdown("<div class='subtitle'>서비스 이용을 위해 인증이 필요합니다.</div>", unsafe_allow_html=True)
+        
+        input_password = st.text_input("Password", type="password", label_visibility="collapsed")
+        if st.button("접속하기"):
+            if input_password == "grsi":
+                st.session_state.authenticated = True
+                st.rerun()
+            else:
+                st.error("❌ 암호가 올바르지 않습니다.")
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    password = st.text_input("Password", type="password")
-
-    if st.button("접속"):
-        if password == "grsi":
-            st.session_state.authenticated = True
+# 4. 챗봇 화면
+else:
+    with st.sidebar:
+        st.markdown("### **수석 애널리스트 챗봇**")
+        st.write("전고체전지 기사 URL을 입력하면 분석 리포트를 제공합니다.")
+        st.markdown("---")
+        if st.button("대화 기록 초기화"):
+            st.session_state.messages = []
             st.rerun()
-        else:
-            st.error("비밀번호 오류")
 
-    st.stop()
+    st.markdown("<div style='text-align: center; padding-bottom: 20px;'><span style='color:#37b5a5; font-weight:700;'>LG EnSol Style</span> 전고체전지 분석 서비스</div>", unsafe_allow_html=True)
 
-# -----------------------------
-# 5. 사이드바
-# -----------------------------
-with st.sidebar:
-    st.write("전고체전지 기사 URL 분석 챗봇")
-    if st.button("초기화"):
-        st.session_state.messages = []
-        st.rerun()
-
-# -----------------------------
-# 6. API 설정
-# -----------------------------
-try:
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-except:
-    st.error("API KEY 오류")
-    st.stop()
-
-# -----------------------------
-# 7. 기사 크롤링 함수
-# -----------------------------
-def get_article_text(url):
+    # ✅ API 설정
     try:
-        headers = {
-            "User-Agent": "Mozilla/5.0"
-        }
-        res = requests.get(url, headers=headers, timeout=10)
-        soup = BeautifulSoup(res.text, "html.parser")
+        MY_API_KEY = st.secrets["GEMINI_API_KEY"]
+        genai.configure(api_key=MY_API_KEY)
+    except Exception:
+        st.error("API Key 설정 오류")
+        st.stop()
 
-        # 스크립트 제거
-        for script in soup(["script", "style"]):
-            script.extract()
+    # 시스템 프롬프트
+    SYSTEM_PROMPT = """당신은 2차전지 및 전고체전지 산업 수석 애널리스트입니다. 
+반드시 한국 대기업식 개조식(~임, ~함)으로 작성하세요.
 
-        text = soup.get_text(separator="\n")
-        lines = [line.strip() for line in text.splitlines() if line.strip()]
-
-        return "\n".join(lines)[:5000]  # 토큰 제한
-    except Exception as e:
-        return f"크롤링 실패: {e}"
-
-# -----------------------------
-# 8. 시스템 프롬프트
-# -----------------------------
-SYSTEM_PROMPT = """당신은 전고체전지 산업 수석 애널리스트입니다.
-
-반드시 아래 형식으로 작성:
-- 한국 대기업 보고서 스타일 (~임, ~함)
-
-[분석]
+[분석 양식]
 1. 핵심 요약 (5줄)
 2. 주요 키워드
-3. 파급력 분석 (큼/중간/작음)
+3. 파급력 분석 (큼 / 중간 / 작음)
 4. 인사이트
 """
 
-# -----------------------------
-# 9. 모델 생성
-# -----------------------------
-model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash",
-    system_instruction=SYSTEM_PROMPT
-)
+    # ✅ 안정화 모델 (핵심 수정)
+    model = genai.GenerativeModel(
+        model_name="gemini-1.5-flash",
+        system_instruction=SYSTEM_PROMPT
+    )
 
-# -----------------------------
-# 10. 기존 대화 출력
-# -----------------------------
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+    # 기존 대화 출력
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
-# -----------------------------
-# 11. 입력 처리
-# -----------------------------
-if prompt := st.chat_input("URL 또는 질문 입력"):
+    # 입력 처리
+    if prompt := st.chat_input("기사 URL 또는 질문 입력"):
 
-    st.session_state.messages.append({"role": "user", "content": prompt})
+        st.session_state.messages.append({"role": "user", "content": prompt})
 
-    with st.chat_message("user"):
-        st.markdown(prompt)
+        with st.chat_message("user"):
+            st.markdown(prompt)
 
-    with st.chat_message("assistant"):
-        with st.spinner("분석 중..."):
-
-            try:
-                # URL이면 크롤링
-                if "http" in prompt:
-                    article = get_article_text(prompt)
-
-                    if "크롤링 실패" in article:
-                        full_prompt = prompt
-                    else:
-                        full_prompt = f"""
-다음 기사 내용을 분석하라:
-
-{article}
-"""
-                else:
-                    full_prompt = prompt
-
-                response = model.generate_content(full_prompt)
-
-                # 안전한 출력
+        with st.chat_message("assistant"):
+            with st.spinner("분석 중..."):
                 try:
-                    answer = response.text
-                except:
-                    answer = response.candidates[0].content.parts[0].text
+                    response = model.generate_content(prompt)
 
-                st.markdown(answer)
+                    # ✅ 안정 출력 (핵심 수정)
+                    try:
+                        full_response = response.text
+                    except:
+                        full_response = response.candidates[0].content.parts[0].text
 
-                st.session_state.messages.append({
-                    "role": "assistant",
-                    "content": answer
-                })
+                    st.markdown(full_response)
 
-            except Exception as e:
-                st.error(f"에러 발생: {e}")
+                    st.session_state.messages.append({
+                        "role": "assistant",
+                        "content": full_response
+                    })
 
-# -----------------------------
-# 12. 푸터
-# -----------------------------
-st.markdown(
-    "<div style='text-align:center;color:#aaa;font-size:12px;'>Battery Analyst Bot</div>",
-    unsafe_allow_html=True
-)
+                except Exception as e:
+                    st.error(f"분석 중 오류 발생: {e}")
+
+# 푸터
+st.markdown("<div style='text-align: center; color: #bbb; font-size: 11px; padding-top: 50px;'>© 2024 Solid-State Battery Analysis Chatbot</div>", unsafe_allow_html=True)
