@@ -1,3 +1,2 @@
 streamlit
-langflow
-langchain-google-genai
+google-generativeai
