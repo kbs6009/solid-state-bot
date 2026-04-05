@@ -59,7 +59,6 @@ if not st.session_state.authenticated:
     with st.container():
         st.markdown("<div class='auth-box'>", unsafe_allow_html=True)
         # 중앙 로고 이미지
-        st.markdown("<div style='margin-bottom:30px;'><img src='https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/LG_Energy_Solution_logo.svg/1024px-LG_Energy_Solution_logo.svg.png' width='250'></div>", unsafe_allow_html=True)
         st.markdown("<div class='title'>All Solid State Battery Article Analyzer</div>", unsafe_allow_html=True)
         st.markdown("<div class='subtitle'>서비스 이용을 위해 인증이 필요합니다.</div>", unsafe_allow_html=True)
         
