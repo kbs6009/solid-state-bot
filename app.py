@@ -115,3 +115,16 @@ else:
                         model_name="gemini-2.0-flash",
                         tools=[{"google_search": {}}], 
                         system_instruction=SYSTEM_PROMPT
+                    )
+                    
+                    # 답변 생성
+                    response = model.generate_content(prompt)
+                    full_response = response.text
+                    
+                    st.markdown(full_response)
+                    st.session_state.messages.append({"role": "assistant", "content": full_response})
+                except Exception as e:
+                    st.error(f"분석 중 오류가 발생했습니다: {e}")
+
+# 하단 푸터
+st.markdown("<div style='text-align: center; color: #bbb; font-size: 11px; padding-top: 50px;'>© 2024 Solid-State Battery Analysis Chatbot. All rights reserved.</div>", unsafe_allow_html=True)
