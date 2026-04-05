@@ -37,6 +37,7 @@ if not st.session_state.authenticated:
     st.markdown("<div style='padding-top: 60px;'></div>", unsafe_allow_html=True)
     with st.container():
         st.markdown("<div class='auth-box'>", unsafe_allow_html=True)
+        # LG에너지솔루션 로고
         st.markdown("<div style='margin-bottom:30px;'><img src='https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/LG_Energy_Solution_logo.svg/512px-LG_Energy_Solution_logo.svg.png' width='250'></div>", unsafe_allow_html=True)
         st.markdown("<div class='title'>Solid-State Battery Analyst</div>", unsafe_allow_html=True)
         st.markdown("<div class='subtitle'>서비스 이용을 위해 인증이 필요합니다.</div>", unsafe_allow_html=True)
@@ -93,10 +94,10 @@ else:
         with st.chat_message("assistant"):
             with st.spinner("구글 검색을 통해 기사 원문을 분석 중입니다..."):
                 try:
-                    # ★ 수정 포인트: 도구 이름을 'google_search'로 변경
+                    # ★ 수정 포인트: 도구 설정을 리스트 안의 딕셔너리 형태로 변경
                     model = genai.GenerativeModel(
-                        model_name="gemini-2.5-flash",
-                        tools="google_search", # 최신 명칭으로 수정
+                        model_name="gemini-1.5-flash",
+                        tools=[{"google_search_retrieval": {}}], # 올바른 구글 검색 도구 설정
                         system_instruction=SYSTEM_PROMPT
                     )
                     
