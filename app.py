@@ -49,8 +49,8 @@ if not st.session_state.authenticated:
     
     with st.container():
         st.markdown("<div class='auth-box'>", unsafe_allow_html=True)
-        # 중앙 로고 이미지
-        st.markdown("<div style='margin-bottom:30px;'><img src='https://www.lgensol.com/assets/img/common/logo.png' width='220'></div>", unsafe_allow_html=True)
+        # 중앙 로고 이미지 (위키미디어의 안정적인 링크로 교체)
+        st.markdown("<div style='margin-bottom:30px;'><img src='https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/LG_Energy_Solution_logo.svg/512px-LG_Energy_Solution_logo.svg.png' width='250'></div>", unsafe_allow_html=True)
         st.markdown("<div class='title'>Solid-State Battery Analyst</div>", unsafe_allow_html=True)
         st.markdown("<div class='subtitle'>서비스 이용을 위해 인증이 필요합니다.</div>", unsafe_allow_html=True)
         
@@ -65,12 +65,11 @@ if not st.session_state.authenticated:
 
 # 4. 챗봇 화면 로직 (인증 완료 시)
 else:
-    # 사이드바 설정
+    # 사이드바 설정 (이미지 삭제됨)
     with st.sidebar:
-        st.markdown("<div style='text-align:center; padding: 20px 0;'><img src='https://www.lgensol.com/assets/img/common/logo.png' width='130'></div>", unsafe_allow_html=True)
-        st.markdown("---")
         st.markdown("### **수석 애널리스트 챗봇**")
         st.write("전고체전지 기사 URL을 입력하시면 전문적인 분석 리포트를 제공합니다.")
+        st.markdown("---")
         if st.button("대화 기록 초기화"):
             st.session_state.messages = []
             st.rerun()
@@ -105,7 +104,7 @@ else:
         with st.chat_message("assistant"):
             with st.spinner("애널리스트가 분석 중입니다..."):
                 try:
-                    # 모델명을 gemini-2.5-flash로 설정
+                    # 모델명을 gemini-2.0-flash로 설정 (가장 최신 지원 모델)
                     model = genai.GenerativeModel(
                         model_name="gemini-2.5-flash",
                         system_instruction=SYSTEM_PROMPT
@@ -116,8 +115,14 @@ else:
                     # AI 메시지 저장
                     st.session_state.messages.append({"role": "assistant", "content": full_response})
                 except Exception as e:
-                    st.error(f"오류 발생: {e}")
-                    st.info("Tip: 만약 404 에러가 난다면 모델명을 'gemini-2.0-flash'로 변경해 보세요.")
+                    # 만약 2.0에서 에러가 나면 1.5로 자동 전환 시도
+                    try:
+                        model = genai.GenerativeModel(model_name="gemini-1.5-flash", system_instruction=SYSTEM_PROMPT)
+                        response = model.generate_content(prompt)
+                        st.markdown(response.text)
+                        st.session_state.messages.append({"role": "assistant", "content": response.text})
+                    except:
+                        st.error(f"오류 발생: {e}")
 
 # 하단 푸터
 st.markdown("<div style='text-align: center; color: #bbb; font-size: 11px; padding-top: 50px;'>© 2024 Solid-State Battery Analysis Chatbot. All rights reserved.</div>", unsafe_allow_html=True)
