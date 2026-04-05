@@ -4,7 +4,7 @@ from google.genai import types
 import requests
 
 # 1. 페이지 설정 및 LG EnSol 스타일 디자인 (민트 포인트)
-st.set_page_config(page_title="LG EnSol Style - 전고체전지 기술 분석 챗봇", layout="centered")
+st.set_page_config(page_title="LG EnSol 전고체전지 기술 분석 챗봇", layout="centered")
 
 # 민트색 포인트 컬러: #37b5a5
 st.markdown("""
@@ -60,7 +60,7 @@ if not st.session_state.authenticated:
         st.markdown("<div class='auth-box'>", unsafe_allow_html=True)
         # 중앙 로고 이미지
         st.markdown("<div style='margin-bottom:30px;'><img src='https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/LG_Energy_Solution_logo.svg/1024px-LG_Energy_Solution_logo.svg.png' width='250'></div>", unsafe_allow_html=True)
-        st.markdown("<div class='title'>Solid-State Battery Analyst</div>", unsafe_allow_html=True)
+        st.markdown("<div class='title'>All Solid State Battery Article Analyzer</div>", unsafe_allow_html=True)
         st.markdown("<div class='subtitle'>서비스 이용을 위해 인증이 필요합니다.</div>", unsafe_allow_html=True)
         
         input_password = st.text_input("Password", type="password", placeholder="암호를 입력하세요", label_visibility="collapsed")
