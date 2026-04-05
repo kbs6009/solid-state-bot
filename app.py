@@ -4,7 +4,7 @@ from google.genai import types
 import requests
 
 # 1. 페이지 설정 및 LG EnSol 스타일 디자인 (민트 포인트)
-st.set_page_config(page_title="LG EnSol 전고체전지 기술 분석 챗봇", layout="centered")
+st.set_page_config(page_title="LG Ensol 전고체전지 기술 분석 챗봇", layout="centered")
 
 # 민트색 포인트 컬러: #37b5a5
 st.markdown("""
@@ -83,7 +83,7 @@ else:
             st.rerun()
 
     # 메인 챗봇 화면 상단
-    st.markdown("<div style='text-align: center; padding-bottom: 20px;'><span style='color:#37b5a5; font-weight:700;'>LG EnSol Style</span> 전고체전지 기술 관련 기사 분석 봇</div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align: center; padding-bottom: 20px;'><span style='color:#37b5a5; font-weight:700;'>LG Ensol</span> 전고체전지 기술 관련 기사 분석 봇</div>", unsafe_allow_html=True)
 
     # API 클라이언트 설정
     try:
