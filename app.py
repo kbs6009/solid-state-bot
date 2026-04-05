@@ -12,8 +12,8 @@ st.markdown("""
     html, body, [class*="css"] { font-family: 'Noto Sans KR', sans-serif; color: #333; }
     
     /* 타이틀 및 텍스트 스타일 */
-    .title { font-size: 32px; font-weight: 700; color: #000; text-align: center; margin-bottom: 10px; }
-    .subtitle { font-size: 16px; color: #666; text-align: center; margin-bottom: 30px; }
+    .title { font-size: 28px; font-weight: 700; color: #000; text-align: center; margin-bottom: 10px; }
+    .subtitle { font-size: 15px; color: #666; text-align: center; margin-bottom: 30px; }
     
     /* 민트색 버튼 스타일 */
     .stButton>button { 
@@ -32,6 +32,7 @@ st.markdown("""
     .auth-box {
         padding: 40px; border-radius: 10px; border: 1px solid #eee;
         box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center;
+        background-color: #ffffff;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -44,13 +45,16 @@ if "messages" not in st.session_state:
 
 # 3. 인증 로직 (첫 화면)
 if not st.session_state.authenticated:
-    st.markdown("<div style='padding-top: 80px;'></div>", unsafe_allow_html=True)
-    st.markdown("<div class='title'>Solid-State Battery Analyst</div>", unsafe_allow_html=True)
-    st.markdown("<div class='subtitle'>서비스 이용을 위해 인증이 필요합니다.</div>", unsafe_allow_html=True)
+    st.markdown("<div style='padding-top: 60px;'></div>", unsafe_allow_html=True)
     
     with st.container():
         st.markdown("<div class='auth-box'>", unsafe_allow_html=True)
-        input_password = st.text_input("Password", type="password", placeholder="암호를 입력하세요")
+        # 중앙 로고 이미지
+        st.markdown("<div style='margin-bottom:30px;'><img src='https://www.lgensol.com/assets/img/common/logo.png' width='220'></div>", unsafe_allow_html=True)
+        st.markdown("<div class='title'>Solid-State Battery Analyst</div>", unsafe_allow_html=True)
+        st.markdown("<div class='subtitle'>서비스 이용을 위해 인증이 필요합니다.</div>", unsafe_allow_html=True)
+        
+        input_password = st.text_input("Password", type="password", placeholder="암호를 입력하세요", label_visibility="collapsed")
         if st.button("접속하기"):
             if input_password == "grsi":
                 st.session_state.authenticated = True
@@ -63,7 +67,7 @@ if not st.session_state.authenticated:
 else:
     # 사이드바 설정
     with st.sidebar:
-        st.markdown("<div style='text-align:center;'><img src='https://www.lgensol.com/assets/img/common/logo.png' width='130'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center; padding: 20px 0;'><img src='https://www.lgensol.com/assets/img/common/logo.png' width='130'></div>", unsafe_allow_html=True)
         st.markdown("---")
         st.markdown("### **수석 애널리스트 챗봇**")
         st.write("전고체전지 기사 URL을 입력하시면 전문적인 분석 리포트를 제공합니다.")
@@ -71,7 +75,7 @@ else:
             st.session_state.messages = []
             st.rerun()
 
-    # 메인 챗봇 화면 타이틀
+    # 메인 챗봇 화면 상단
     st.markdown("<div style='text-align: center; padding-bottom: 20px;'><span style='color:#37b5a5; font-weight:700;'>LG EnSol Style</span> 전고체전지 분석 서비스</div>", unsafe_allow_html=True)
 
     # API 설정
@@ -101,8 +105,9 @@ else:
         with st.chat_message("assistant"):
             with st.spinner("애널리스트가 분석 중입니다..."):
                 try:
+                    # 모델명을 gemini-2.5-flash로 설정
                     model = genai.GenerativeModel(
-                        model_name="gemini-1.5-flash",
+                        model_name="gemini-2.5-flash",
                         system_instruction=SYSTEM_PROMPT
                     )
                     response = model.generate_content(prompt)
@@ -112,6 +117,7 @@ else:
                     st.session_state.messages.append({"role": "assistant", "content": full_response})
                 except Exception as e:
                     st.error(f"오류 발생: {e}")
+                    st.info("Tip: 만약 404 에러가 난다면 모델명을 'gemini-2.0-flash'로 변경해 보세요.")
 
 # 하단 푸터
 st.markdown("<div style='text-align: center; color: #bbb; font-size: 11px; padding-top: 50px;'>© 2024 Solid-State Battery Analysis Chatbot. All rights reserved.</div>", unsafe_allow_html=True)
