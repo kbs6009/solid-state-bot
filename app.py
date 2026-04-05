@@ -96,7 +96,7 @@ else:
                 try:
                     # ★ 수정 포인트: 도구 설정을 리스트 안의 딕셔너리 형태로 변경
                     model = genai.GenerativeModel(
-                        model_name="gemini-1.5-flash",
+                        model_name="gemini-2.5-flash",
                         tools=[{"google_search_retrieval": {}}], # 올바른 구글 검색 도구 설정
                         system_instruction=SYSTEM_PROMPT
                     )
