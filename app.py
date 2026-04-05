@@ -4,20 +4,26 @@ import google.generativeai as genai
 # 1. 페이지 설정 및 디자인 (LG EnSol 스타일 + 민트 포인트)
 st.set_page_config(page_title="LG EnSol Style - 전고체전지 분석 챗봇", layout="centered")
 
+# 민트색 포인트 컬러: #37b5a5
 st.markdown("""
     <style>
     .main { background-color: #ffffff; }
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&display=swap');
     html, body, [class*="css"] { font-family: 'Noto Sans KR', sans-serif; color: #333; }
+    
     .title { font-size: 28px; font-weight: 700; color: #000; text-align: center; margin-bottom: 10px; }
     .subtitle { font-size: 15px; color: #666; text-align: center; margin-bottom: 30px; }
+    
+    /* 민트색 버튼 스타일 */
     .stButton>button { 
         width: 100%; background-color: #37b5a5; color: #fff; border-radius: 5px; 
         padding: 12px; font-size: 16px; font-weight: 700; border: none; transition: 0.3s;
     }
     .stButton>button:hover { background-color: #2d9387; color: #fff; }
+    
     .stChatMessage { border-radius: 15px; margin-bottom: 10px; }
     .stChatInput input:focus { border-color: #37b5a5 !important; }
+    
     .auth-box {
         padding: 40px; border-radius: 10px; border: 1px solid #eee;
         box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center;
@@ -37,10 +43,11 @@ if not st.session_state.authenticated:
     st.markdown("<div style='padding-top: 60px;'></div>", unsafe_allow_html=True)
     with st.container():
         st.markdown("<div class='auth-box'>", unsafe_allow_html=True)
-        # LG에너지솔루션 로고
+        # LG에너지솔루션 로고 (안정적인 위키미디어 링크)
         st.markdown("<div style='margin-bottom:30px;'><img src='https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/LG_Energy_Solution_logo.svg/512px-LG_Energy_Solution_logo.svg.png' width='250'></div>", unsafe_allow_html=True)
         st.markdown("<div class='title'>Solid-State Battery Analyst</div>", unsafe_allow_html=True)
         st.markdown("<div class='subtitle'>서비스 이용을 위해 인증이 필요합니다.</div>", unsafe_allow_html=True)
+        
         input_password = st.text_input("Password", type="password", placeholder="암호를 입력하세요", label_visibility="collapsed")
         if st.button("접속하기"):
             if input_password == "grsi":
@@ -54,7 +61,7 @@ if not st.session_state.authenticated:
 else:
     with st.sidebar:
         st.markdown("### **수석 애널리스트 챗봇**")
-        st.write("전고체전지 기사 URL을 입력하시면 구글 검색을 통해 실시간 분석 리포트를 제공합니다.")
+        st.write("전고체전지 기사 URL을 입력하시면 실시간 구글 검색을 통해 분석 리포트를 제공합니다.")
         st.markdown("---")
         if st.button("대화 기록 초기화"):
             st.session_state.messages = []
@@ -94,10 +101,10 @@ else:
         with st.chat_message("assistant"):
             with st.spinner("구글 검색을 통해 기사 원문을 분석 중입니다..."):
                 try:
-                    # ★ 수정 포인트: 도구 이름을 최신 규격인 'google_search'로 변경
+                    # ★ 핵심 수정: Gemini 2.0 모델과 최신 google_search 도구 사용
                     model = genai.GenerativeModel(
                         model_name="gemini-2.5-flash",
-                        tools=[{"google_search": {}}], # 최신 구글 검색 도구 설정
+                        tools=[{"google_search": {}}], 
                         system_instruction=SYSTEM_PROMPT
                     )
                     
