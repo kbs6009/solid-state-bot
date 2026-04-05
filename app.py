@@ -1,81 +1,139 @@
 import streamlit as st
 import google.generativeai as genai
 
-# 1. 웹페이지 기본 설정
-st.set_page_config(page_title="전고체전지 분석기", layout="wide")
+# 1. 페이지 설정 및 디자인 (LG 에너지솔루션 스타일 CSS)
+st.set_page_config(page_title="LG EnSol Style - 전고체전지 분석", layout="centered")
+
+st.markdown("""
+    <style>
+    /* 전체 배경색 화이트 */
+    .main {
+        background-color: #ffffff;
+    }
+    /* 폰트 설정 */
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&display=swap');
+    html, body, [class*="css"] {
+        font-family: 'Noto Sans KR', sans-serif;
+        color: #333;
+    }
+    /* 타이틀 스타일 */
+    .title {
+        font-size: 36px;
+        font-weight: 700;
+        color: #000;
+        text-align: center;
+        margin-bottom: 10px;
+        letter-spacing: -1px;
+    }
+    .subtitle {
+        font-size: 16px;
+        color: #666;
+        text-align: center;
+        margin-bottom: 50px;
+    }
+    /* 입력창 라벨 스타일 */
+    .stTextInput label, .stTextArea label {
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        color: #333 !important;
+    }
+    /* 필수 표시(*) 스타일 */
+    .required {
+        color: #e6007e;
+        margin-left: 4px;
+    }
+    /* 버튼 스타일 (LG EnSol 블랙 버튼 스타일) */
+    .stButton>button {
+        width: 100%;
+        background-color: #000;
+        color: #fff;
+        border-radius: 0px;
+        padding: 15px;
+        font-size: 16px;
+        font-weight: 700;
+        border: none;
+        margin-top: 20px;
+        transition: 0.3s;
+    }
+    .stButton>button:hover {
+        background-color: #333;
+        color: #fff;
+    }
+    /* 사이드바 스타일 */
+    [data-testid="stSidebar"] {
+        background-color: #f8f9fa;
+        border-right: 1px solid #eee;
+    }
+    /* 결과창 박스 스타일 */
+    .result-box {
+        background-color: #fdfdfd;
+        border: 1px solid #ddd;
+        padding: 25px;
+        margin-top: 30px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 # 2. 사이드바 - 암호 입력창
 with st.sidebar:
+    st.markdown("<div style='padding: 20px 0;'><img src='https://www.lgensol.com/assets/img/common/logo.png' width='150'></div>", unsafe_allow_html=True)
     st.header("🔐 접속 인증")
     password = st.text_input("암호를 입력하세요", type="password")
-    st.info("인증이 완료되면 분석 기능이 활성화됩니다.")
 
-# 3. 암호 확인 (grsi)
+# 3. 메인 화면 로직
 if password == "grsi":
-    st.success("✅ 인증되었습니다. 수석 애널리스트 모드가 활성화되었습니다.")
-    
-    # --- 여기서부터 본문 내용 ---
-    st.title("🔋 전고체전지 전문 분석 챗봇")
-    st.write("기사 URL을 입력하면 전문적인 산업 분석 리포트를 생성합니다.")
+    # 타이틀 영역
+    st.markdown("<div class='title'>전고체전지 산업 분석 서비스</div>", unsafe_allow_html=True)
+    st.markdown("<div class='subtitle'>기사 URL을 입력하시면 전문 애널리스트의 분석 리포트를 제공합니다.</div>", unsafe_allow_html=True)
+    st.markdown("---")
 
-    # [보안 주의] API 키를 코드에 직접 넣습니다.
-    # 본인의 실제 API 키를 아래 따옴표 안에 붙여넣으세요.
-    MY_API_KEY = "YOUR_GOOGLE_API_KEY_HERE" 
+    # API 설정
+    MY_API_KEY = "YOUR_GOOGLE_API_KEY_HERE" # 본인의 API 키 입력
     genai.configure(api_key=MY_API_KEY)
 
-    # 확정된 시스템 프롬프트 (수석 애널리스트 페르소나)
+    # 시스템 프롬프트
     SYSTEM_PROMPT = """
 당신은 2차전지 및 전고체전지(All-Solid-State Battery) 산업을 심도 있게 분석하는 수석 애널리스트입니다.
-사용자가 전고체전지 관련 URL을 입력하면 아래의 [평가 프레임워크]와 [분석 양식]에 맞춰 정량적이고 통찰력 있는 분석을 제공해야 합니다.
-
-[검색 및 데이터 검증 규칙]
-URL이 아닌경우 대화의 흐름에 맞게 전문적인 대답을 하십시오.
-1. URL이 제공될 경우: 임의로 내용을 추측하지 말고, 제공된 내용을 바탕으로 분석할 것.
-2. 팩트 체크: 최대한 정량적으로 정확한 값(온도, 압력, 연도, GWh 등)을 사용할 것. 모르는 것은 "확인 불가"로 답할 것.
-
-[애널리스트의 평가 프레임워크]
-당신은 전고체전지 상용화를 위해 다음 조건이 입증되어야 한다고 판단합니다.
-- 장점 입증: 1) 높은 에너지밀도, 2) 10분 이내 급속충전, 3) 열폭주 안전성
-- 과제 해결: 1) 황화물 고체전해질 가격 하락, 2) 혁신 공정을 통한 대량 생산, 3) 저온 성능 확보, 4) 낮은 구동 가압(1MPa 이하)
+반드시 한국 대기업식 '개조식 요약문'으로 작성할 것. (~임, ~함, ~로 판단됨 등)
 
 [분석 양식]
 1. 📝 핵심 요약: 기사의 핵심 내용을 5문장 내외로 요약.
-2. 🔑 주요 키워드: 기업명, 연구실, 주요 기술항목 추출 및 인물 이력 요약(아는 범위 내).
-3. 📈 파급력 분석 (큼 / 중간 / 작음): 저온 성능, 구동 가압, 안전성, 재료비, 공정비/양산성 기준.
-4. 💡 애널리스트 인사이트: 시장 판도 변화 및 기술적 기인 요소 분석(양극재/음극재/전해질/공정 등 구분).
-
-★문체: 반드시 한국 대기업식 '개조식 요약문'으로 작성할 것. (~임, ~함, ~로 판단됨 등)
+2. 🔑 주요 키워드: 기업명, 연구실, 주요 기술항목 추출.
+3. 📈 파급력 분석 (큼 / 중간 / 작음): 기술적 근거를 바탕으로 판별.
+4. 💡 애널리스트 인사이트: 시장 판도 변화 및 기술적 기인 요소 분석.
     """
 
-    # 사용자 입력창
-    user_input = st.text_area("분석할 기사 URL을 입력하세요:", placeholder="https://news.naver.com/...")
+    # 입력 폼
+    st.markdown("<div>기사 URL <span class='required'>*</span></div>", unsafe_allow_html=True)
+    user_input = st.text_input("URL을 입력해 주세요.", label_visibility="collapsed", placeholder="https://news.naver.com/...")
 
-    if st.button("🚀 리포트 생성 시작"):
+    if st.button("리포트 생성하기"):
         if not user_input:
-            st.warning("분석할 URL을 입력해주세요.")
+            st.error("분석할 URL을 입력해 주세요.")
         else:
-            with st.spinner("애널리스트가 데이터를 정밀 분석 중입니다..."):
+            with st.spinner("데이터를 분석 중입니다. 잠시만 기다려 주십시오..."):
                 try:
-                    # Gemini 모델 설정
                     model = genai.GenerativeModel(
                         model_name="gemini-1.5-flash",
                         system_instruction=SYSTEM_PROMPT
                     )
-                    
-                    # 답변 생성
                     response = model.generate_content(user_input)
                     
-                    # 결과 출력
-                    st.markdown("---")
+                    st.markdown("<div class='result-box'>", unsafe_allow_html=True)
                     st.markdown("### 📊 전고체전지 산업 분석 리포트")
                     st.markdown(response.text)
+                    st.markdown("</div>", unsafe_allow_html=True)
                     
                 except Exception as e:
-                    st.error(f"오류가 발생했습니다: {e}")
+                    st.error(f"분석 중 오류가 발생했습니다: {e}")
 
 else:
-    # 암호가 틀리거나 입력되지 않았을 때
-    st.title("🔋 전고체전지 전문 분석 챗봇")
-    st.warning("사이드바에 올바른 암호를 입력해야 서비스를 이용할 수 있습니다.")
+    # 암호 미입력 시 초기 화면
+    st.markdown("<div class='title' style='margin-top:100px;'>Service Access</div>", unsafe_allow_html=True)
+    st.markdown("<div class='subtitle'>본 서비스는 승인된 사용자만 이용 가능합니다.<br>사이드바에서 암호를 입력해 주십시오.</div>", unsafe_allow_html=True)
     if password and password != "grsi":
-        st.error("❌ 암호가 틀렸습니다. 다시 확인해주세요.")
+        st.sidebar.error("❌ 암호가 일치하지 않습니다.")
+
+# 하단 푸터 스타일
+st.markdown("---")
+st.markdown("<div style='text-align: center; color: #999; font-size: 12px;'>© 2024 Solid-State Battery Analysis Service. All rights reserved.</div>", unsafe_allow_html=True)
