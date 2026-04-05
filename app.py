@@ -22,13 +22,9 @@ st.markdown("""
     }
     .stButton>button:hover { background-color: #2d9387; color: #fff; }
     
-    /* 챗봇 말풍선 스타일 */
     .stChatMessage { border-radius: 15px; margin-bottom: 10px; }
-    
-    /* 입력창 테두리 민트색 강조 */
     .stChatInput input:focus { border-color: #37b5a5 !important; }
     
-    /* 인증 화면 박스 */
     .auth-box {
         padding: 40px; border-radius: 10px; border: 1px solid #eee;
         box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center;
@@ -73,7 +69,6 @@ if not st.session_state.authenticated:
 
 # 4. 챗봇 화면 로직 (인증 완료 시)
 else:
-    # 사이드바 설정
     with st.sidebar:
         st.markdown("### **책임 연구원 챗봇**")
         st.write("전고체전지 기술 분석을 수행합니다.")
@@ -82,10 +77,8 @@ else:
             st.session_state.messages = []
             st.rerun()
 
-    # 메인 챗봇 화면 상단
     st.markdown("<div style='text-align: center; padding-bottom: 20px;'><span style='color:#37b5a5; font-weight:700;'>LG EnSol Style</span> 전고체전지 기술 분석 서비스</div>", unsafe_allow_html=True)
 
-    # API 설정
     try:
         MY_API_KEY = st.secrets["GEMINI_API_KEY"]
         genai.configure(api_key=MY_API_KEY)
@@ -127,7 +120,7 @@ URL이 제공될 경우: 임의로 내용을 추측하지 말고, 반드시 '웹
 (이력 정리는 지어내지 말고 반드시 검색결과에 의존해 작성) 
 
 📈 파급력 분석 (큼 / 중간 / 작음) 
-기사에 아래 항목과 관련된 내용이 있을 경우만 판별 및 근거 서술 (언급이 없으면 해당 항목 생략). 
+기사에 아래 항목과 관련된 내용이 있을 경우에만 판별 및 근거 서술 (언급이 없으면 해당 항목 생략). 
 -[저온 성능] 상온 성능 우수 주장 시 '중간', 0도 이하 성능 강조 시 '큼' 
 -[구동 가압] 2MPa 이하는 '중간', 1MPa 이하는 '큼' 
 -[안전성] 단순 내열성 우수는 '작음', 네일/파괴 테스트 통과는 '중간', 열전파(Thermal propagation) 완벽 차단은 '큼' 
@@ -170,7 +163,8 @@ URL이 제공될 경우: 임의로 내용을 추측하지 말고, 반드시 '웹
                                 article_text = get_article_text(word)
                                 break
                     
-                    # ★ 핵심 수정: google_search 명칭 사용
+                    # ★ 핵심 수정: google_search 도구 호출 규격
+                    # tools=[{"google_search": {}}] 형식이 최신 SDK에서 가장 안정적입니다.
                     model = genai.GenerativeModel(
                         model_name="gemini-2.5-flash",
                         tools=[{"google_search": {}}], 
@@ -181,10 +175,7 @@ URL이 제공될 경우: 임의로 내용을 추측하지 말고, 반드시 '웹
                     chat = model.start_chat(history=[])
                     
                     # 최종 입력 구성
-                    if article_text:
-                        final_input = f"다음 기사 내용을 분석하고 구글 검색을 통해 심층 기술 분석을 수행해줘:\n\n{article_text}"
-                    else:
-                        final_input = prompt
+                    final_input = f"다음 기사 내용을 분석하고 구글 검색을 통해 심층 기술 분석을 수행해줘:\n\n{article_text if article_text else prompt}"
                     
                     response = chat.send_message(final_input)
                     full_response = response.text
