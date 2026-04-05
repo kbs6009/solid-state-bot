@@ -93,7 +93,7 @@ else:
         st.error("API Key 설정 오류. Streamlit Secrets를 확인하세요.")
         st.stop()
 
-    # 시스템 프롬프트 (따옴표 에러 방지를 위해 변수로 분리)
+    # 시스템 프롬프트
     SYSTEM_PROMPT = """You have access to Google Search. To use it, you MUST first output your internal reasoning (Thought) about why the search is necessary, and then perform the function call.
 IMPORTANT: Before calling any tool, you must first output a detailed 'Thought' section. Never provide a function call without a preceding thought.
 
@@ -170,10 +170,10 @@ URL이 제공될 경우: 임의로 내용을 추측하지 말고, 반드시 '웹
                                 article_text = get_article_text(word)
                                 break
                     
-                    # 모델 생성 (사용자 요청 모델명: gemini-2.5-flash)
+                    # ★ 핵심 수정: google_search_retrieval 명칭 사용
                     model = genai.GenerativeModel(
                         model_name="gemini-2.5-flash",
-                        tools=[{"google_search": {}}], 
+                        tools=[{"google_search_retrieval": {}}], 
                         system_instruction=SYSTEM_PROMPT
                     )
                     
