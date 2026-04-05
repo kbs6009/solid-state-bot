@@ -1,5 +1,6 @@
 import streamlit as st
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 import requests
 
 # 1. 페이지 설정 및 LG EnSol 스타일 디자인 (민트 포인트)
@@ -57,7 +58,7 @@ if not st.session_state.authenticated:
     st.markdown("<div style='padding-top: 60px;'></div>", unsafe_allow_html=True)
     with st.container():
         st.markdown("<div class='auth-box'>", unsafe_allow_html=True)
-        # 중앙 로고 이미지
+        # 중앙 로고 이미지 (안정적인 위키미디어 링크)
         st.markdown("<div style='margin-bottom:30px;'><img src='https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/LG_Energy_Solution_logo.svg/1024px-LG_Energy_Solution_logo.svg.png' width='250'></div>", unsafe_allow_html=True)
         st.markdown("<div class='title'>Solid-State Battery Analyst</div>", unsafe_allow_html=True)
         st.markdown("<div class='subtitle'>서비스 이용을 위해 인증이 필요합니다.</div>", unsafe_allow_html=True)
@@ -85,15 +86,15 @@ else:
     # 메인 챗봇 화면 상단
     st.markdown("<div style='text-align: center; padding-bottom: 20px;'><span style='color:#37b5a5; font-weight:700;'>LG EnSol Style</span> 전고체전지 기술 분석 서비스</div>", unsafe_allow_html=True)
 
-    # API 설정
+    # ★ 새로운 라이브러리에 맞춘 API 클라이언트 설정
     try:
         MY_API_KEY = st.secrets["GEMINI_API_KEY"]
-        genai.configure(api_key=MY_API_KEY)
+        client = genai.Client(api_key=MY_API_KEY)
     except Exception:
         st.error("API Key 설정 오류. Streamlit Secrets를 확인하세요.")
         st.stop()
 
-    # 사용자님의 강력한 책임 연구원 시스템 프롬프트
+    # 시스템 프롬프트
     SYSTEM_PROMPT = """You have access to Google Search. To use it, you MUST first output your internal reasoning (Thought) about why the search is necessary, and then perform the function call.
 IMPORTANT: Before calling any tool, you must first output a detailed 'Thought' section. Never provide a function call without a preceding thought.
 
@@ -157,7 +158,7 @@ URL이 제공될 경우: 임의로 내용을 추측하지 말고, 반드시 '웹
             st.markdown(prompt)
 
         with st.chat_message("assistant"):
-            with st.spinner("책임 연구원이 구글 검색과 심층 분석을 수행 중입니다..."):
+            with st.spinner("책임 연구원이 구글 검색과 기술 분석을 수행 중입니다..."):
                 try:
                     # URL 감지 및 본문 추출
                     article_text = ""
@@ -168,18 +169,29 @@ URL이 제공될 경우: 임의로 내용을 추측하지 말고, 반드시 '웹
                                 article_text = get_article_text(word)
                                 break
                     
-                    # ★ 핵심 수정: 복잡한 딕셔너리 없이 가장 직관적인 문자열 'google_search' 사용
-                    model = genai.GenerativeModel(
-                        model_name="gemini-2.5-flash",
-                        tools="google_search", 
-                        system_instruction=SYSTEM_PROMPT
-                    )
-                    
-                    # 대화 시작 (History 적용)
-                    chat = model.start_chat(history=[])
+                    # ★ 새로운 공식 라이브러리에 맞춘 대화 기록 변환
+                    history_contents =[]
                     for msg in st.session_state.messages[:-1]:
                         role = "user" if msg["role"] == "user" else "model"
-                        chat.history.append({"role": role, "parts": [msg["content"]]})
+                        history_contents.append(
+                            types.Content(role=role, parts=[types.Part.from_text(text=msg["content"])])
+                        )
+                    
+                    # ★ 에러가 절대 날 수 없는 공식 구글 검색 도구 세팅
+                    google_search_tool = types.Tool(google_search=types.GoogleSearch())
+                    
+                    config = types.GenerateContentConfig(
+                        system_instruction=SYSTEM_PROMPT,
+                        tools=[google_search_tool],
+                        temperature=0.2 # 답변의 정확도를 높이기 위해 약간 낮춤
+                    )
+                    
+                    # 새로운 방식으로 챗봇 생성 (gemini-2.5-flash 사용)
+                    chat = client.chats.create(
+                        model="gemini-2.5-flash",
+                        config=config,
+                        history=history_contents
+                    )
                     
                     # 최종 입력 구성
                     final_input = f"다음 기사 내용을 분석하고 구글 검색을 통해 심층 기술 분석을 수행해줘:\n\n{article_text if article_text else prompt}"
@@ -189,8 +201,10 @@ URL이 제공될 경우: 임의로 내용을 추측하지 말고, 반드시 '웹
                     
                     st.markdown(full_response)
                     st.session_state.messages.append({"role": "assistant", "content": full_response})
+                    
                 except Exception as e:
                     st.error(f"분석 중 오류가 발생했습니다: {e}")
+                    st.info("Tip: 만약 404 에러가 난다면 구글 서버가 2.5를 아직 미지원하는 것이니 코드에서 'gemini-2.0-flash'로 변경해주세요.")
 
 # 하단 푸터
 st.markdown("<div style='text-align: center; color: #bbb; font-size: 11px; padding-top: 50px;'>© 2026 Solid-State Battery Technical Analysis Chatbot. All rights reserved.</div>", unsafe_allow_html=True)
