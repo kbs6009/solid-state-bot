@@ -71,14 +71,13 @@ st.markdown("""
         padding: 25px;
         margin-top: 30px;
         border-radius: 5px;
-        line-height: 1.6;
+        line-height: 1.8;
     }
     </style>
     """, unsafe_allow_html=True)
 
 # 2. 사이드바 - 암호 입력창
 with st.sidebar:
-    # LG 에너지솔루션 로고 (공식 웹사이트 이미지)
     st.markdown("<div style='padding: 20px 0; text-align:center;'><img src='https://www.lgensol.com/assets/img/common/logo.png' width='150'></div>", unsafe_allow_html=True)
     st.markdown("---")
     st.header("🔐 접속 인증")
@@ -99,35 +98,11 @@ if password == "grsi":
         st.error("API Key 설정이 완료되지 않았습니다. Streamlit Cloud의 Secrets 설정을 확인해주세요.")
         st.stop()
 
-    # 시스템 프롬프트 (수석 애널리스트 페르소나)
+    # 시스템 프롬프트
     SYSTEM_PROMPT = """
 당신은 2차전지 및 전고체전지(All-Solid-State Battery) 산업을 심도 있게 분석하는 수석 애널리스트입니다.
 반드시 한국 대기업식 '개조식 요약문'으로 작성할 것. (~임, ~함, ~로 판단됨 등)
 
 [분석 양식]
 1. 📝 핵심 요약: 기사의 핵심 내용을 5문장 내외로 요약.
-2. 🔑 주요 키워드: 기업명, 연구실, 주요 기술항목 추출.
-3. 📈 파급력 분석 (큼 / 중간 / 작음): 기술적 근거를 바탕으로 판별.
-4. 💡 애널리스트 인사이트: 시장 판도 변화 및 기술적 기인 요소 분석.
-    """
-
-    # 입력 폼
-    st.markdown("<div>기사 URL <span class='required'>*</span></div>", unsafe_allow_html=True)
-    user_input = st.text_input("URL을 입력해 주세요.", label_visibility="collapsed", placeholder="https://news.naver.com/...")
-
-    if st.button("리포트 생성하기"):
-        if not user_input:
-            st.error("분석할 URL을 입력해 주세요.")
-        else:
-            with st.spinner("데이터를 정밀 분석 중입니다. 잠시만 기다려 주십시오..."):
-                try:
-                    model = genai.GenerativeModel(
-                        model_name="gemini-1.5-flash",
-                        system_instruction=SYSTEM_PROMPT
-                    )
-                    response = model.generate_content(user_input)
-                    
-                    st.markdown("<div class='result-box'>", unsafe_allow_html=True)
-                    st.markdown("### 📊 전고체전지 산업 분석 리포트")
-                    st.markdown(response.text)
-                    st.markdown("</div>", unsafe_allow_html=True)
+2. 🔑 주요 키워드: 기업명,
