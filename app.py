@@ -1,7 +1,7 @@
 import streamlit as st
 import google.generativeai as genai
 
-# 1. 페이지 설정 및 디자인
+# 1. 페이지 설정 및 디자인 (LG EnSol 스타일 + 민트 포인트)
 st.set_page_config(page_title="LG EnSol Style - 전고체전지 분석 챗봇", layout="centered")
 
 st.markdown("""
@@ -32,7 +32,7 @@ if "authenticated" not in st.session_state:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# 3. 인증 로직
+# 3. 인증 로직 (첫 화면)
 if not st.session_state.authenticated:
     st.markdown("<div style='padding-top: 60px;'></div>", unsafe_allow_html=True)
     with st.container():
@@ -49,7 +49,7 @@ if not st.session_state.authenticated:
                 st.error("❌ 암호가 올바르지 않습니다.")
         st.markdown("</div>", unsafe_allow_html=True)
 
-# 4. 챗봇 화면 로직
+# 4. 챗봇 화면 로직 (인증 완료 시)
 else:
     with st.sidebar:
         st.markdown("### **수석 애널리스트 챗봇**")
@@ -68,7 +68,7 @@ else:
         st.error("API Key 설정 오류. Streamlit Secrets를 확인하세요.")
         st.stop()
 
-    # 시스템 프롬프트 (검색 도구 사용 강조)
+    # 시스템 프롬프트
     SYSTEM_PROMPT = """
 당신은 2차전지 및 전고체전지 산업 수석 애널리스트입니다. 
 사용자가 URL을 제공하면 반드시 '구글 검색(Google Search)' 도구를 사용하여 해당 페이지의 실제 내용을 읽고 분석하세요.
@@ -93,15 +93,15 @@ else:
         with st.chat_message("assistant"):
             with st.spinner("구글 검색을 통해 기사 원문을 분석 중입니다..."):
                 try:
-                    # ★ 핵심: 구글 검색 도구(tools)를 활성화하여 모델 생성
+                    # ★ 수정 포인트: 도구 이름을 'google_search'로 변경
                     model = genai.GenerativeModel(
                         model_name="gemini-2.5-flash",
-                        tools=[{'google_search_retrieval': {}}], # 구글 검색 기능 연결
+                        tools="google_search", # 최신 명칭으로 수정
                         system_instruction=SYSTEM_PROMPT
                     )
                     
-                    # 답변 생성 (검색 기능을 사용하여 답변하도록 유도)
-                    response = model.generate_content(f"다음 URL의 기사 내용을 검색해서 분석해줘: {prompt}")
+                    # 답변 생성
+                    response = model.generate_content(f"이 URL의 기사 내용을 검색해서 분석해줘: {prompt}")
                     
                     full_response = response.text
                     st.markdown(full_response)
