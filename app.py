@@ -58,7 +58,7 @@ if password == "grsi":
             with st.spinner("데이터를 정밀 분석 중입니다. 잠시만 기다려 주십시오..."):
                 try:
                     model = genai.GenerativeModel(
-                        model_name="gemini-1.5-flash",
+                        model_name="gemini-2.5-flash",
                         system_instruction=SYSTEM_PROMPT
                     )
                     response = model.generate_content(user_input)
