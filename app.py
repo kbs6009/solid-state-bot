@@ -136,7 +136,7 @@ URL이 제공될 경우: 임의로 내용을 추측하지 말고, 반드시 '웹
 
 # 7. 모델 생성 (가장 안정적인 1.5-flash 사용)
 model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash", 
+    model_name="gemini-2.5-flash", 
     system_instruction=SYSTEM_PROMPT
 )
 
